@@ -39,7 +39,11 @@
         var manchester = {lat: 53.479167, lng: -2.244167};
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 14,
-          center: manchester
+          center: manchester,
+          zoomControl: false,
+          scaleControl: false,
+          scrollwheel: false,
+          disableDoubleClickZoom: true
         });
 
         // var metrolinkLayer = new google.maps.KmlLayer({
@@ -55,6 +59,7 @@
             data: monthlyCrimesDataToPoints(months),
             map: map,
             dissipating: false
+            //radius: 200
           });
         });
 
@@ -62,30 +67,48 @@
 
       //var blacklistedMonths = ["2016-02", "2016-03", "2016-04", "2016-05", "2016-06", "2016-07", "2016-08", "2016-09", "2016-10"]
       blacklistedMonths = []
-      var blacklistedCrimeTypes = ["Shoplifting", "Public order", "Bicycle theft", "Drugs"]
+      //var blacklistedCrimeTypes = ["Shoplifting", "Public order", "Bicycle theft", "Drugs"]
+      blacklistedCrimeTypes = []
+      var weightings = {
+        "Possession of weapons": 1.0,
+        "Public order": 0.5,
+        "Shoplifting": 0.5,
+        "Bicycle theft": 0.5,
+        "Drugs": 0.5,
+        "Other crime": 1.0,
+        "Anti-social behaviour": 1.0,
+        "Other theft": 0.5,
+        "Vehicle crime": 3.0,
+        "Robbery": 3.0,
+        "Violence and sexual offences": 6.0,
+        "Burglary": 4.0,
+        "Criminal damage and arson": 3.0,
+        "Theft from the person": 3.0
+      }
 
       function monthlyCrimesDataToPoints(months) {
-        points = []
-        weights = {}
+        var points = []
+        var weights = {}
         for(var month in months) {
           if(blacklistedMonths.includes(month)) continue
           console.log("Creating points for " + month)
-          crimeTypes = months[month]
+          var crimeTypes = months[month]
           for(var crimeType in crimeTypes) {
             if(blacklistedCrimeTypes.includes(crimeType)) continue
-            crimes = crimeTypes[crimeType]
+            var crimes = crimeTypes[crimeType]
+            var weight = weightings[crimeType]
             for(var i = 0; i < crimes.length; i++) {
               var crime = crimes[i]
               if(crime.length == 2) {
                 var lat = parseFloat(crime[0])
                 var lng = parseFloat(crime[1])
                 
-                key = lat + "-" + lng
+                var key = lat + "-" + lng
                 if(key in weights) {
-                  weights[key] += 1
+                  weights[key] += weight
                 } else {
                   points.push({lat: lat, lng: lng})
-                  weights[key] = 1
+                  weights[key] = weight
                 }
                 //console.log(lat+","+lng)
               }
