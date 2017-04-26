@@ -39,6 +39,8 @@
         var manchester = {lat: 53.479167, lng: -2.244167};
         var map = new google.maps.Map(document.getElementById('map'), {
           zoom: 14,
+          minZoom: 14,
+          maxZoom: 14,
           center: manchester,
           zoomControl: false,
           scaleControl: false,
