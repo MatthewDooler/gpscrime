@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Crime Heatmap</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+
+      #map img[src*='kml'] {
+          opacity: .2;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAwrJYcLbGYE0Jj2V_qZ1RdciKbc94kto&libraries=visualization">
+    </script>-->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAAwrJYcLbGYE0Jj2V_qZ1RdciKbc94kto&libraries=visualization&callback=initMap">
+    </script>
+    <script src="https://cdn.jsdelivr.net/lodash/4.16.2/lodash.min.js"></script>
+
+    <script>
+
+      $(document).ready(function() {
+        $.ajaxSetup({ cache: false });
+        //initMap();
+      });
+
+      function initMap() {
+
+        var manchester = {lat: 53.479167, lng: -2.244167};
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 10,
+          center: manchester
+        });
+
+        var metrolinkLayer = new google.maps.KmlLayer({
+          url: 'https://www.google.com/maps/d/u/0/kml?mid=11OJEPdRAqDjYNPXWu1NTo5rfcMQ&forcekml=1',
+          map: map
+        });
+
+        var transitLayer = new google.maps.TransitLayer();
+        transitLayer.setMap(map);
+
+        $.getJSON("data/crimes.json", function(months) {
+          heatmap = new google.maps.visualization.HeatmapLayer({
+            data: monthlyCrimesDataToPoints(months),
+            map: map
+          });
+        });
+
+      }
+
+      function monthlyCrimesDataToPoints(months) {
+        points = []
+        for(var month in months) {
+          console.log("Creating points for " + month)
+          crimeTypes = months[month]
+          for(var crimeType in crimeTypes) {
+            crimes = crimeTypes[crimeType]
+            for(var i = 0; i < crimes.length; i++) {
+              var crime = crimes[i]
+              if(crime.length == 2) {
+                var lat = parseFloat(crime[0])
+                var lng = parseFloat(crime[1])
+                points.push(new google.maps.LatLng(lat, lng))
+                //console.log(lat+","+lng)
+              }
+            }
+          }
+        }
+        console.log("Finished creating points")
+        return points
+      }
+    </script>
+  </body>
+</html>
